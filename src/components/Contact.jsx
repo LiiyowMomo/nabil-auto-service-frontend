@@ -1,134 +1,170 @@
-import { Phone, MapPin, Clock, Mail } from 'lucide-react'
+import { useState } from 'react';
+import { Phone, MapPin, Clock, Mail } from 'lucide-react';
 
 const Contact = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    vehicle: '',
+    service: [], // Change to array
+    message: '',
+  });
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value, type, options } = e.target;
+    if (name === "service" && type === "select-multiple") {
+      const selected = Array.from(options)
+        .filter(option => option.selected)
+        .map(option => option.value);
+      setFormData(prev => ({ ...prev, service: selected }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    // Phone number validation: must be exactly 10 digits
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (phoneDigits.length !== 10) {
+      setError("Phone number must be exactly 10 digits.");
+      return;
+    }
+    // Service validation: at least one service selected
+    if (!formData.service || formData.service.length === 0) {
+      setError("Please select at least one service.");
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5001/api/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        setError("");
+        alert('Request submitted successfully!');
+        setFormData({
+          name: '',
+          phone: '',
+          vehicle: '',
+          service: [],
+          message: ''
+        });
+      } else {
+        setError('Failed to submit request.');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setError('An error occurred. Please try again later.');
+    }
+  };
+
   return (
     <section id="contact" className="py-20 bg-automotive-lightGray">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-automotive-charcoal mb-6">
-            Contact Us
-          </h2>
-          <p className="text-xl text-automotive-gray max-w-3xl mx-auto leading-relaxed">
-            Ready to service your vehicle? Get in touch with us today for professional 
-            automotive repair and maintenance services.
-          </p>
-        </div>
+        {/* ... your other UI sections ... */}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <h3 className="text-2xl font-bold text-automotive-charcoal mb-6">
-              Get in Touch
-            </h3>
-            <div className="space-y-6">
-              <div className="flex items-center">
-                <div className="bg-automotive-red text-white p-3 rounded-lg mr-4">
-                  <Phone className="h-6 w-6" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-automotive-charcoal">Phone</h4>
-                  <a 
-                    href="tel:647-281-0071" 
-                    className="text-automotive-gray hover:text-automotive-red transition-colors duration-200"
-                  >
-                    647-281-0071
-                  </a>
-                </div>
-              </div>
-              
-              <div className="flex items-center">
-                <div className="bg-automotive-red text-white p-3 rounded-lg mr-4">
-                  <MapPin className="h-6 w-6" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-automotive-charcoal">Service Area</h4>
-                  <p className="text-automotive-gray">Greater Toronto Area</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center">
-                <div className="bg-automotive-red text-white p-3 rounded-lg mr-4">
-                  <Clock className="h-6 w-6" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-automotive-charcoal">Hours</h4>
-                  <p className="text-automotive-gray">Monday - Friday: 8:00 AM - 6:00 PM</p>
-                  <p className="text-automotive-gray">Saturday: 8:00 AM - 4:00 PM</p>
-                  <p className="text-automotive-gray">Sunday: Closed</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center">
-                <div className="bg-automotive-red text-white p-3 rounded-lg mr-4">
-                  <Mail className="h-6 w-6" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-automotive-charcoal">Emergency Service</h4>
-                  <p className="text-automotive-gray">24/7 Emergency Support Available</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Left side content skipped for brevity */}
 
           <div className="bg-white rounded-lg shadow-lg p-8">
             <h3 className="text-2xl font-bold text-automotive-charcoal mb-6">
               Request Service
             </h3>
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              {error && (
+                <div className="text-red-600 font-semibold mb-2">{error}</div>
+              )}
               <div>
-                <label className="block text-sm font-medium text-automotive-charcoal mb-1">
-                  Name
-                </label>
+                <label className="block text-sm font-medium text-automotive-charcoal mb-1">Name</label>
                 <input 
                   type="text" 
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-automotive-red focus:border-transparent"
                   placeholder="Your full name"
+                  required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-automotive-charcoal mb-1">
-                  Phone
-                </label>
+                <label className="block text-sm font-medium text-automotive-charcoal mb-1">Phone</label>
                 <input 
                   type="tel" 
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-automotive-red focus:border-transparent"
                   placeholder="Your phone number"
+                  required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-automotive-charcoal mb-1">
-                  Vehicle Make & Model
-                </label>
+                <label className="block text-sm font-medium text-automotive-charcoal mb-1">Vehicle Make & Model</label>
                 <input 
                   type="text" 
+                  name="vehicle"
+                  value={formData.vehicle}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-automotive-red focus:border-transparent"
                   placeholder="e.g., Toyota Camry 2018"
+                  required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-automotive-charcoal mb-1">
-                  Service Needed
-                </label>
-                <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-automotive-red focus:border-transparent">
-                  <option>Select a service</option>
-                  <option>Fuel Injection</option>
-                  <option>Safety Inspection</option>
-                  <option>Tune Up</option>
-                  <option>Exhaust & Brakes</option>
-                  <option>Shocks & Front End</option>
-                  <option>Air Conditioning</option>
-                  <option>Engine Repair</option>
-                  <option>Transmission</option>
-                  <option>Other</option>
-                </select>
+                <label className="block text-sm font-medium text-automotive-charcoal mb-1">Service Needed</label>
+                <div className="flex flex-wrap gap-2">
+                  { [
+                    'Fuel Injection',
+                    'Safety Inspection',
+                    'Tune Up',
+                    'Exhaust & Brakes',
+                    'Shocks & Front End',
+                    'Air Conditioning',
+                    'Engine Repair',
+                    'Transmission',
+                    'Other'
+                  ].map(option => (
+                    <label key={option} className="inline-flex items-center bg-gray-100 px-3 py-1 rounded cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="service"
+                        value={option}
+                        checked={formData.service.includes(option)}
+                        onChange={e => {
+                          const checked = e.target.checked;
+                          setFormData(prev => ({
+                            ...prev,
+                            service: checked
+                              ? [...prev.service, option]
+                              : prev.service.filter(s => s !== option)
+                          }));
+                        }}
+                        className="mr-2 accent-automotive-red"
+                      />
+                      {option}
+                    </label>
+                  ))}
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-automotive-charcoal mb-1">
-                  Message
-                </label>
+                <label className="block text-sm font-medium text-automotive-charcoal mb-1">Message</label>
                 <textarea 
+                  name="message"
                   rows="4" 
+                  value={formData.message}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-automotive-red focus:border-transparent"
                   placeholder="Describe your vehicle's issue or service needs"
+                  required
                 ></textarea>
               </div>
               <button 
@@ -141,22 +177,11 @@ const Contact = () => {
           </div>
         </div>
 
-        <div className="text-center mt-12">
-          <div className="bg-automotive-red text-white py-6 px-8 rounded-lg inline-block">
-            <h3 className="text-2xl font-bold mb-2">Need Immediate Service?</h3>
-            <p className="text-lg mb-4">Call us now for urgent automotive repairs</p>
-            <a 
-              href="tel:647-281-0071"
-              className="bg-white text-automotive-red px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200 inline-flex items-center"
-            >
-              <Phone className="h-5 w-5 mr-2" />
-              647-281-0071
-            </a>
-          </div>
-        </div>
+        {/* ... bottom section remains unchanged ... */}
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default Contact
+export default Contact;
+

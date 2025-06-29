@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Phone, Menu, X } from 'lucide-react'
+import { Link } from "react-router-dom"
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -32,25 +33,25 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
-              <button 
+              <button
                 onClick={() => scrollToSection('home')}
                 className="text-automotive-charcoal hover:text-automotive-red px-3 py-2 text-sm font-medium transition-colors duration-200"
               >
                 Home
               </button>
-              <button 
+              <button
                 onClick={() => scrollToSection('services')}
                 className="text-automotive-charcoal hover:text-automotive-red px-3 py-2 text-sm font-medium transition-colors duration-200"
               >
                 Services
               </button>
-              <button 
+              <button
                 onClick={() => scrollToSection('about')}
                 className="text-automotive-charcoal hover:text-automotive-red px-3 py-2 text-sm font-medium transition-colors duration-200"
               >
                 About
               </button>
-              <button 
+              <button
                 onClick={() => scrollToSection('contact')}
                 className="text-automotive-charcoal hover:text-automotive-red px-3 py-2 text-sm font-medium transition-colors duration-200"
               >
@@ -62,12 +63,23 @@ const Header = () => {
           {/* Phone Number */}
           <div className="hidden md:flex items-center">
             <Phone className="h-4 w-4 text-automotive-red mr-2" />
-            <a 
-              href="tel:647-281-0071" 
+            <a
+              href="tel:647-281-0071"
               className="text-automotive-charcoal hover:text-automotive-red font-medium transition-colors duration-200"
             >
               647-281-0071
             </a>
+          </div>
+          <div className="hidden md:flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-automotive-red mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+            </svg>
+            <Link
+              to="/admin-login"
+              className="text-automotive-charcoal hover:text-automotive-red font-medium transition-colors duration-200"
+            >
+              Admin Login
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -85,25 +97,25 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-              <button 
+              <button
                 onClick={() => scrollToSection('home')}
                 className="text-automotive-charcoal hover:text-automotive-red block px-3 py-2 text-base font-medium w-full text-left transition-colors duration-200"
               >
                 Home
               </button>
-              <button 
+              <button
                 onClick={() => scrollToSection('services')}
                 className="text-automotive-charcoal hover:text-automotive-red block px-3 py-2 text-base font-medium w-full text-left transition-colors duration-200"
               >
                 Services
               </button>
-              <button 
+              <button
                 onClick={() => scrollToSection('about')}
                 className="text-automotive-charcoal hover:text-automotive-red block px-3 py-2 text-base font-medium w-full text-left transition-colors duration-200"
               >
                 About
               </button>
-              <button 
+              <button
                 onClick={() => scrollToSection('contact')}
                 className="text-automotive-charcoal hover:text-automotive-red block px-3 py-2 text-base font-medium w-full text-left transition-colors duration-200"
               >
@@ -112,8 +124,8 @@ const Header = () => {
               <div className="px-3 py-2 border-t">
                 <div className="flex items-center">
                   <Phone className="h-4 w-4 text-automotive-red mr-2" />
-                  <a 
-                    href="tel:647-281-0071" 
+                  <a
+                    href="tel:647-281-0071"
                     className="text-automotive-charcoal hover:text-automotive-red font-medium transition-colors duration-200"
                   >
                     647-281-0071
