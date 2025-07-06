@@ -11,6 +11,37 @@ const Contact = () => {
   });
   const [error, setError] = useState("");
 
+  const formatPhoneNumber = (value) => {
+    // If the value is empty or just "+", return empty string
+    if (!value || value === '+') {
+      return '';
+    }
+    
+    // If it starts with +1, extract just the digits after +1
+    if (value.startsWith('+1')) {
+      const phoneNumber = value.slice(2).replace(/\D/g, '');
+      if (phoneNumber.length === 0) {
+        return '';
+      }
+      if (phoneNumber.length <= 10) {
+        return `+1${phoneNumber}`;
+      } else {
+        return `+1${phoneNumber.slice(0, 10)}`;
+      }
+    }
+    
+    // For any other input, extract digits and format
+    const phoneNumber = value.replace(/\D/g, '');
+    if (phoneNumber.length === 0) {
+      return '';
+    }
+    if (phoneNumber.length <= 10) {
+      return `+1${phoneNumber}`;
+    } else {
+      return `+1${phoneNumber.slice(0, 10)}`;
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value, type, options } = e.target;
     if (name === "service" && type === "select-multiple") {
@@ -18,6 +49,10 @@ const Contact = () => {
         .filter(option => option.selected)
         .map(option => option.value);
       setFormData(prev => ({ ...prev, service: selected }));
+    } else if (name === "phone") {
+      // Format phone number as user types
+      const formattedPhone = formatPhoneNumber(value);
+      setFormData(prev => ({ ...prev, [name]: formattedPhone }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -27,10 +62,11 @@ const Contact = () => {
     e.preventDefault();
     setError("");
 
-    // Phone number validation: must be exactly 10 digits
-    const phoneDigits = formData.phone.replace(/\D/g, '');
-    if (phoneDigits.length !== 10) {
-      setError("Phone number must be exactly 10 digits.");
+    // Phone number validation: must be in +1XXXXXXXXXX format and 12 characters
+    const phone = formData.phone;
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (!phone.startsWith('+1') || phoneDigits.length !== 11) {
+      setError("Phone number must start with +1 and be followed by exactly 10 digits.");
       return;
     }
     // Service validation: at least one service selected
@@ -40,12 +76,20 @@ const Contact = () => {
     }
 
     try {
+      // Submit the phone number as-is (with +1)
+      const submissionData = {
+        ...formData,
+        phone: formData.phone // keep the +1
+      };
+
+      console.log('Submitting data:', submissionData); // Debug log
+
       const response = await fetch('http://localhost:5001/api/customers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submissionData)
       });
 
       if (response.ok) {
@@ -59,11 +103,13 @@ const Contact = () => {
           message: ''
         });
       } else {
-        setError('Failed to submit request.');
+        const errorData = await response.text();
+        console.error('Response error:', response.status, errorData);
+        setError(`Failed to submit request. Status: ${response.status}`);
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
-      setError('An error occurred. Please try again later.');
+      console.error('Network error:', error);
+      setError('Network error. Please check if the backend server is running.');
     }
   };
 
@@ -103,7 +149,7 @@ const Contact = () => {
                   value={formData.phone}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-automotive-red focus:border-transparent"
-                  placeholder="Your phone number"
+                  placeholder="+1 437 766-1234"
                   required
                 />
               </div>
