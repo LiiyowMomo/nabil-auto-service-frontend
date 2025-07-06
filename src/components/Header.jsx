@@ -74,12 +74,14 @@ const Header = () => {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-automotive-red mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
             </svg>
-            <Link
-              to="/admin-login"
+            <a
+              href="/admin-login"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-automotive-charcoal hover:text-automotive-red font-medium transition-colors duration-200"
             >
               Admin Login
-            </Link>
+            </a>
           </div>
 
           {/* Mobile menu button */}

@@ -18,7 +18,14 @@ const LoginForm = () => {
     try {
       const data = await login(form);
       localStorage.setItem("token", data.token);
-      window.location.href = "/admin-dashboard";
+      localStorage.setItem("role", data.role);
+      if (data.role === "superadmin") {
+        window.location.href = "/superadmin-dashboard";
+      } else if (data.role === "admin") {
+        window.location.href = "/admin-dashboard";
+      } else {
+        window.location.href = "/";
+      }
     } catch (err) {
       setError(err.message);
     } finally {
