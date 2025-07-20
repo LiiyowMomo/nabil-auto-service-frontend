@@ -54,9 +54,9 @@ const Hero = () => {
           </div>
           <div className="text-center">
             <img 
-              src="https://images.pexels.com/photos/3806288/pexels-photo-3806288.jpeg?auto=compress&cs=tinysrgb&w=800" 
-              alt="Professional Auto Mechanic Working" 
-              className="rounded-lg shadow-2xl mx-auto max-w-full h-auto"
+              src="/hero.jpeg"
+              alt="Auto Service Hero"
+              className="rounded-lg shadow-2xl mx-auto max-w-sm md:max-w-lg lg:max-w-2xl h-auto object-contain bg-white"
             />
           </div>
         </div>

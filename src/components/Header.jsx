@@ -24,9 +24,12 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 className="text-2xl font-bold text-automotive-red">
-                Nabil Auto Service
-              </h1>
+              <img
+                src="/Nabil_name-Logo.jpg"
+                alt="Nabil Auto Service Logo"
+                className="h-14 max-w-xs"
+                style={{ objectFit: "contain", display: "block", margin: "0 auto" }}
+              />
             </div>
           </div>
 

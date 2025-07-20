@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DashboardHeader from "../components/DashboardHeader";
 import CustomerJobsTable from "../components/CustomerJobsTable";
-import { UserPlus, Users, Settings, ClipboardList } from "lucide-react";
+import { UserPlus, Users, Settings, ClipboardList, Trash2 } from "lucide-react";
 
 const SuperAdminDashboard = () => {
   const [showCreateUser, setShowCreateUser] = useState(false);
@@ -17,6 +17,8 @@ const SuperAdminDashboard = () => {
   const [jobsError, setJobsError] = useState("");
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [updatingId, setUpdatingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [deletingUserId, setDeletingUserId] = useState(null);
   const [showCustomerJobs, setShowCustomerJobs] = useState(false);
 
   useEffect(() => {
@@ -120,6 +122,52 @@ const SuperAdminDashboard = () => {
     }
   };
 
+  // Handler for deleting jobs
+  const handleDeleteJob = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this job? This action cannot be undone.")) {
+      return;
+    }
+    
+    setDeletingId(id);
+    try {
+      const response = await fetch(`http://localhost:5001/api/customers/${id}`, {
+        method: "DELETE"
+      });
+      if (!response.ok) throw new Error("Failed to delete job");
+      setFilteredCustomers(customers => customers.filter(c => c._id !== id));
+    } catch (err) {
+      setJobsError(err.message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  // Handler for deleting users
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+      return;
+    }
+    
+    setDeletingUserId(userId);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5001/auth/api/users/${userId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete user");
+      }
+      setUsers(users => users.filter(u => u._id !== userId));
+      setMessage("User deleted successfully!");
+    } catch (err) {
+      setUsersError(err.message);
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
+
   // Fetch jobs on component mount
   useEffect(() => {
     fetchJobs();
@@ -179,6 +227,8 @@ const SuperAdminDashboard = () => {
                 filteredCustomers={filteredCustomers}
                 updatingId={updatingId}
                 handleStatusChange={handleStatusChange}
+                handleDeleteJob={handleDeleteJob}
+                deletingId={deletingId}
               />
             </div>
           )}
@@ -252,6 +302,7 @@ const SuperAdminDashboard = () => {
                       <tr className="bg-automotive-blue text-white">
                         <th className="py-2 px-3">Username</th>
                         <th className="py-2 px-3">Role</th>
+                        <th className="py-2 px-3">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -259,6 +310,20 @@ const SuperAdminDashboard = () => {
                         <tr key={i} className="border-b hover:bg-gray-100">
                           <td className="py-2 px-3">{u.username}</td>
                           <td className="py-2 px-3 capitalize">{u.role}</td>
+                          <td className="py-2 px-3 text-center">
+                            <button
+                              onClick={() => handleDeleteUser(u._id)}
+                              disabled={deletingUserId === u._id}
+                              className="text-red-600 hover:text-red-800 disabled:opacity-50 transition-colors duration-200"
+                              title="Delete user"
+                            >
+                              {deletingUserId === u._id ? (
+                                <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

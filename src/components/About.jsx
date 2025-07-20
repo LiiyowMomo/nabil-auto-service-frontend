@@ -63,8 +63,8 @@ const About = () => {
           </div>
           <div className="text-center">
             <img 
-              src="https://images.pexels.com/photos/3806288/pexels-photo-3806288.jpeg?auto=compress&cs=tinysrgb&w=800" 
-              alt="Professional Auto Shop" 
+              src="/about.jpg" 
+              alt="About Nabil Auto Service" 
               className="rounded-lg shadow-2xl max-w-full h-auto"
             />
           </div>

@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Phone, MapPin, Clock, Mail } from 'lucide-react';
+import WaitTimeEstimator from './WaitTimeEstimator';
+import waitTimeService from '../services/waitTimeService';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +12,11 @@ const Contact = () => {
     message: '',
   });
   const [error, setError] = useState("");
+  const [serviceTypes, setServiceTypes] = useState([]);
+  const [isEstimatingWaitTime, setIsEstimatingWaitTime] = useState(false);
+  const [waitTimeServices, setWaitTimeServices] = useState([]);
+  const [queueWaitMinutes, setQueueWaitMinutes] = useState(null);
+  const [jobId, setJobId] = useState(null);
 
   const formatPhoneNumber = (value) => {
     // If the value is empty or just "+", return empty string
@@ -57,6 +64,53 @@ const Contact = () => {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
+
+  // Load service types when component mounts
+  useEffect(() => {
+    async function fetchServiceTypes() {
+      try {
+        const types = await waitTimeService.getServiceTypes();
+        setServiceTypes(types);
+      } catch (error) {
+        console.error('Error loading service types:', error);
+      }
+    }
+    
+    fetchServiceTypes();
+  }, []);
+  
+  // Estimate wait time whenever services change
+  useEffect(() => {
+    async function estimateWaitTime() {
+      if (waitTimeServices.length > 0) {
+        setIsEstimatingWaitTime(true);
+        try {
+          // Simulate backend call for queue wait minutes
+          // In real implementation, this would call the API:
+          // const result = await waitTimeService.estimateWaitTime(waitTimeServices);
+          // setQueueWaitMinutes(result.queueWaitMinutes);
+          
+          // For now, we'll simulate a wait time (about 75% of service time)
+          const totalServiceTime = waitTimeServices.reduce((total, service) => {
+            return total + (service.estimatedDuration || 30);
+          }, 0);
+          
+          // Simulate a short API delay
+          setTimeout(() => {
+            setQueueWaitMinutes(Math.round(totalServiceTime * 0.75));
+            setIsEstimatingWaitTime(false);
+          }, 500);
+        } catch (error) {
+          console.error('Error estimating wait time:', error);
+          setIsEstimatingWaitTime(false);
+        }
+      } else {
+        setQueueWaitMinutes(null);
+      }
+    }
+    
+    estimateWaitTime();
+  }, [waitTimeServices]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -177,6 +231,7 @@ const Contact = () => {
                     'Air Conditioning',
                     'Engine Repair',
                     'Transmission',
+                    'Oil Change',
                     'Other'
                   ].map(option => (
                     <label key={option} className="inline-flex items-center bg-gray-100 px-3 py-1 rounded cursor-pointer">
@@ -187,12 +242,24 @@ const Contact = () => {
                         checked={formData.service.includes(option)}
                         onChange={e => {
                           const checked = e.target.checked;
+                          const updatedServices = checked
+                            ? [...formData.service, option]
+                            : formData.service.filter(s => s !== option);
+                            
                           setFormData(prev => ({
                             ...prev,
-                            service: checked
-                              ? [...prev.service, option]
-                              : prev.service.filter(s => s !== option)
+                            service: updatedServices
                           }));
+                          
+                          // Create a service object with default duration if not found in serviceTypes
+                          const serviceObj = serviceTypes.find(s => s.name === option) || 
+                                            { name: option, estimatedDuration: 30 }; // Default 30 minutes
+                          
+                          if (checked) {
+                            setWaitTimeServices(prev => [...prev, serviceObj]);
+                          } else {
+                            setWaitTimeServices(prev => prev.filter(s => s.name !== option));
+                          }
                         }}
                         className="mr-2 accent-automotive-red"
                       />
@@ -213,6 +280,17 @@ const Contact = () => {
                   required
                 ></textarea>
               </div>
+              
+              {/* Wait Time Estimator */}
+              {formData.service.length > 0 && (
+                <WaitTimeEstimator 
+                  services={waitTimeServices}
+                  isLoading={isEstimatingWaitTime}
+                  status="pending"
+                  queueWaitMinutes={queueWaitMinutes}
+                />
+              )}
+              
               <button 
                 type="submit"
                 className="w-full bg-automotive-red hover:bg-red-700 text-white py-3 rounded-lg font-semibold transition-colors duration-200"

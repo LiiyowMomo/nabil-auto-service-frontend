@@ -57,6 +57,11 @@ const Services = () => {
       icon: <Wrench className="h-8 w-8" />,
       title: "Transmission",
       description: "Transmission service, repair, and replacement for both automatic and manual transmissions."
+    },
+    {
+      icon: <Settings className="h-8 w-8" />,
+      title: "Oil Change",
+      description: "Quick and professional oil change services to keep your engine running smoothly and extend its life."
     }
   ]
 
