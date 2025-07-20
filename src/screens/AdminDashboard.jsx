@@ -23,6 +23,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
@@ -60,14 +61,36 @@ const AdminDashboard = () => {
     }
   };
 
-  // Filtered and searched customers
+  const handleDeleteJob = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this job? This action cannot be undone.")) {
+      return;
+    }
+    
+    setDeletingId(id);
+    try {
+      const response = await fetch(`http://localhost:5001/api/customers/${id}`, {
+        method: "DELETE"
+      });
+      if (!response.ok) throw new Error("Failed to delete job");
+      setCustomers(customers => customers.filter(c => c._id !== id));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  // Filtered and searched customers - only show Pending and Started jobs
   const filteredCustomers = customers.filter(c => {
+    // First filter: only show Pending and Started jobs (hide Completed)
+    const isActiveJob = c.jobStatus === "Pending" || c.jobStatus === "Started";
+    
     const matchesSearch =
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.phone.includes(search) ||
       c.vehicle.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter ? c.jobStatus === statusFilter : true;
-    return matchesSearch && matchesStatus;
+    return isActiveJob && matchesSearch && matchesStatus;
   });
 
   const stats = {
@@ -154,12 +177,15 @@ const AdminDashboard = () => {
                   onChange={e => setStatusFilter(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-automotive-blue focus:border-automotive-blue bg-white/50"
                 >
-                  <option value="">All Statuses</option>
-                  {JOB_STATUS_OPTIONS.map(status => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
+                  <option value="">All Active Jobs</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Started">Started</option>
                 </select>
               </div>
+            </div>
+            <div className="mt-4 text-sm text-gray-600">
+              <p>• Only showing Pending and Started jobs</p>
+              <p>• Completed jobs are kept in database but hidden from view</p>
             </div>
           </div>
 
@@ -170,6 +196,8 @@ const AdminDashboard = () => {
             filteredCustomers={filteredCustomers}
             updatingId={updatingId}
             handleStatusChange={handleStatusChange}
+            handleDeleteJob={handleDeleteJob}
+            deletingId={deletingId}
           />
         </div>
       </section>

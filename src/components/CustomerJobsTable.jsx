@@ -1,4 +1,5 @@
 import React from "react";
+import { Trash2 } from "lucide-react";
 
 const JOB_STATUS_OPTIONS = ["Pending", "Started", "Completed"];
 const STATUS_COLORS = {
@@ -13,6 +14,8 @@ const CustomerJobsTable = ({
   filteredCustomers,
   updatingId,
   handleStatusChange,
+  handleDeleteJob,
+  deletingId,
 }) => (
   <div className="bg-white/95 rounded-xl shadow-lg overflow-hidden">
     {loading && (
@@ -35,12 +38,13 @@ const CustomerJobsTable = ({
               <th className="px-6 py-4 text-left text-sm font-semibold">Service(s)</th>
               <th className="px-6 py-4 text-left text-sm font-semibold">Message</th>
               <th className="px-6 py-4 text-left text-sm font-semibold">Job Status</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
             {filteredCustomers.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                   No jobs found
                 </td>
               </tr>
@@ -88,6 +92,20 @@ const CustomerJobsTable = ({
                         ))}
                       </select>
                     </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => handleDeleteJob(c._id)}
+                      disabled={deletingId === c._id}
+                      className="text-red-600 hover:text-red-800 disabled:opacity-50 transition-colors duration-200"
+                      title="Delete job"
+                    >
+                      {deletingId === c._id ? (
+                        <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </button>
                   </td>
                 </tr>
               ))
