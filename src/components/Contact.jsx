@@ -17,6 +17,8 @@ const Contact = () => {
   const [waitTimeServices, setWaitTimeServices] = useState([]);
   const [queueWaitMinutes, setQueueWaitMinutes] = useState(null);
   const [jobId, setJobId] = useState(null);
+  // Dropdown state for service selection
+  const [showServiceDropdown, setShowServiceDropdown] = useState(false);
 
   const formatPhoneNumber = (value) => {
     // If the value is empty or just "+", return empty string
@@ -221,51 +223,43 @@ const Contact = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-automotive-charcoal mb-1">Service Needed</label>
-                <div className="flex flex-wrap gap-2">
-                  { [
-                    'Fuel Injection',
-                    'Safety Inspection',
-                    'Tune Up',
-                    'Exhaust & Brakes',
-                    'Shocks & Front End',
-                    'Air Conditioning',
-                    'Engine Repair',
-                    'Transmission',
-                    'Oil Change',
-                    'Other'
-                  ].map(option => (
-                    <label key={option} className="inline-flex items-center bg-gray-100 px-3 py-1 rounded cursor-pointer">
-                      <input
-                        type="checkbox"
-                        name="service"
-                        value={option}
-                        checked={formData.service.includes(option)}
-                        onChange={e => {
-                          const checked = e.target.checked;
-                          const updatedServices = checked
-                            ? [...formData.service, option]
-                            : formData.service.filter(s => s !== option);
-                            
-                          setFormData(prev => ({
-                            ...prev,
-                            service: updatedServices
-                          }));
-                          
-                          // Create a service object with default duration if not found in serviceTypes
-                          const serviceObj = serviceTypes.find(s => s.name === option) || 
-                                            { name: option, estimatedDuration: 30 }; // Default 30 minutes
-                          
-                          if (checked) {
-                            setWaitTimeServices(prev => [...prev, serviceObj]);
-                          } else {
-                            setWaitTimeServices(prev => prev.filter(s => s.name !== option));
-                          }
-                        }}
-                        className="mr-2 accent-automotive-red"
-                      />
-                      {option}
-                    </label>
-                  ))}
+                <div className="relative" style={{ maxWidth: '300px' }}>
+                  <button
+                    type="button"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-left focus:ring-2 focus:ring-automotive-red focus:border-transparent"
+                    onClick={() => setShowServiceDropdown(prev => !prev)}
+                  >
+                    {formData.service.length > 0 ? formData.service.join(", ") : "Select services"}
+                  </button>
+                  {showServiceDropdown && (
+                    <div className="absolute left-0 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10 p-2" style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                      {[ 'Fuel Injection', 'Safety Inspection', 'Tune Up', 'Exhaust & Brakes', 'Shocks & Front End', 'Air Conditioning', 'Engine Repair', 'Transmission', 'Oil Change', 'Other' ].map(option => (
+                        <label key={option} className="flex items-center mb-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="service"
+                            value={option}
+                            checked={formData.service.includes(option)}
+                            onChange={e => {
+                              const checked = e.target.checked;
+                              const updatedServices = checked
+                                ? [...formData.service, option]
+                                : formData.service.filter(s => s !== option);
+                              setFormData(prev => ({ ...prev, service: updatedServices }));
+                              const serviceObj = serviceTypes.find(s => s.name === option) || { name: option, estimatedDuration: 30 };
+                              if (checked) {
+                                setWaitTimeServices(prev => [...prev, serviceObj]);
+                              } else {
+                                setWaitTimeServices(prev => prev.filter(s => s.name !== option));
+                              }
+                            }}
+                            className="mr-2 accent-automotive-red"
+                          />
+                          {option}
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
               <div>
